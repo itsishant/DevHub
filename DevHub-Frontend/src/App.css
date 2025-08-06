@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: Poppin;
+    src: url("./assets/fonts/Poppins-ExtraBold.ttf");
+}
+
+@font-face {
+    font-family: PoppinBold;
+    src: url("./assets/fonts/Poppins-Bold.ttf");
+}
+
+
+@theme{
+    --font-Poppin: Poppin, "hello"
+}
+
+@theme{
+    --font-Poppin: PoppinBold, "PoppinBold"
+}
