@@ -3,10 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export const Signup = () => {
-    // State to manage which step of the form we are on
     const [step, setStep] = useState(1);
-
-    // A single state object to hold all form data, structured like the schema
     const [formData, setFormData] = useState({
         username: '',
         password: '',
@@ -15,79 +12,56 @@ export const Signup = () => {
             lastname: '',
             email: '',
             phone: '',
-            skills: [], // Skills will be an array of strings
+            skills: [],
         },
         Avatar: '',
     });
-
-    const navigate = useNavigate();  
     
-    // State for the temporary skill input
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
     const [skillInput, setSkillInput] = useState('');
     const [focusedField, setFocusedField] = useState('');
 
-    // General handler for top-level fields (username, password, Avatar)
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value,
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
     
-    // Specific handler for nested Bio fields
     const handleBioChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            Bio: {
-                ...prev.Bio,
-                [name]: value,
-            },
+            Bio: { ...prev.Bio, [name]: value },
         }));
     };
 
     const handleAddSkill = (e) => {
-        // Prevent form submission if user presses Enter
         e.preventDefault();
         const newSkill = skillInput.trim();
-        // Add skill if it's not empty and not already in the list
         if (newSkill && !formData.Bio.skills.includes(newSkill)) {
             setFormData(prev => ({
                 ...prev,
-                Bio: {
-                    ...prev.Bio,
-                    skills: [...prev.Bio.skills, newSkill],
-                },
+                Bio: { ...prev.Bio, skills: [...prev.Bio.skills, newSkill] },
             }));
-            setSkillInput(''); // Clear the input field
+            setSkillInput('');
         }
     };
 
     const handleRemoveSkill = (skillToRemove) => {
         setFormData(prev => ({
             ...prev,
-            Bio: {
-                ...prev.Bio,
-                skills: prev.Bio.skills.filter(skill => skill !== skillToRemove),
-            },
+            Bio: { ...prev.Bio, skills: prev.Bio.skills.filter(skill => skill !== skillToRemove) },
         }));
     };
 
-    const handleNext = () => {
-        // Here you could add validation for the current step's fields
-        setStep(prev => prev + 1);
-    };
-
-    const handleBack = () => {
-        setStep(prev => prev - 1);
-    };
+    const handleNext = () => setStep(prev => prev + 1);
+    const handleBack = () => setStep(prev => prev - 1);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
         
-        // Before submitting, we structure the data to perfectly match the Mongoose schema.
-        // The schema expects Bio to be an array of objects.
         const finalData = {
             username: formData.username,
             password: formData.password,
@@ -95,25 +69,32 @@ export const Signup = () => {
                 firstname: formData.Bio.firstname,
                 lastname: formData.Bio.lastname,
                 email: formData.Bio.email,
-                // Ensure phone is sent as a number if the input is not empty
-                phone: formData.Bio.phone ? Number(formData.Bio.phone) : null,
+                phone: formData.Bio.phone,
                 skills: formData.Bio.skills,
             }],
             Avatar: formData.Avatar
         };
 
-        console.log('Final form data ready for API:', finalData);
-        const response = await axios.post("http://localhost:3000/api/v1/signup", finalData);
-        console.log("Response from signup API:", response.data);
-        // Here you would typically make an API call to your backend, e.g.,
-        // axios.post('/api/users/signup', finalData)
-        //  .then(response => console.log('Success:', response))
-        //  .catch(error => console.error('Error:', error));
+        try {
+            const response = await axios.post("http://localhost:3000/api/v1/signup", finalData);
+            localStorage.setItem("token", response.data.token);
+            setTimeout(() => {
+                navigate("/dashboard");
+                setIsLoading(false); 
+            }, 2000);
+        } catch (err) {
+            if (err.response && err.response.data && err.response.data.message) {
+                setError(err.response.data.message);
+            } else if (err.request) {
+                setError("Cannot connect to server. Please try again later.");
+            } else {
+                setError("An unexpected error occurred during signup.");
+            }
+            console.error("Signup Error:", err);
+        }
     };
 
-    // Helper to render input fields consistently
     const renderInput = (name, type, placeholder, value, onChange, isBio = false) => (
-        
         <div className="relative">
             <input 
                 type={type}
@@ -135,21 +116,18 @@ export const Signup = () => {
     
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-950 relative overflow-hidden">
-            {/* Animated Background Elements */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
                 <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
                 <div className="absolute -bottom-40 left-20 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
             </div>
 
-            {/* Signup Form */}
             <div className="relative z-10 bg-black/40 border border-gray-800 p-8 rounded-2xl shadow-2xl w-[26rem] backdrop-blur-lg animate-slideUp">
                 <div className="text-center mb-6">
                     <h2 className="text-3xl font-light text-white mb-2 animate-fadeIn">Join Dev Hub</h2>
                     <p className="text-gray-400 text-sm animate-fadeIn animation-delay-500">Connect with developers worldwide</p>
                 </div>
 
-                {/* Progress Bar */}
                 <div className="flex justify-center items-center space-x-4 mb-8">
                     {[1, 2, 3].map(s => (
                         <div key={s} className="flex items-center">
@@ -162,53 +140,29 @@ export const Signup = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Step 1: Credentials */}
                     {step === 1 && (
                         <div className="space-y-6 animate-fadeIn">
-                            <div>
-                                <label className="block text-gray-300 mb-2 text-sm font-medium">Username</label>
-                                {renderInput('username', 'text', 'Enter your username', formData.username, handleInputChange)}
-                            </div>
-                            <div>
-                                <label className="block text-gray-300 mb-2 text-sm font-medium">Password</label>
-                                {renderInput('password', 'password', 'Create a strong password', formData.password, handleInputChange)}
-                            </div>
+                            {renderInput('username', 'text', 'Enter your username', formData.username, handleInputChange)}
+                            {renderInput('password', 'password', 'Create a strong password', formData.password, handleInputChange)}
                         </div>
                     )}
 
-                    {/* Step 2: Personal Info */}
                     {step === 2 && (
                         <div className="space-y-6 animate-fadeIn">
-                            <div>
-                                <label className="block text-gray-300 mb-2 text-sm font-medium">First Name</label>
-                                {renderInput('firstname', 'text', 'Jane', formData.Bio.firstname, handleBioChange, true)}
-                            </div>
-                             <div>
-                                <label className="block text-gray-300 mb-2 text-sm font-medium">Last Name</label>
-                                {renderInput('lastname', 'text', 'Doe', formData.Bio.lastname, handleBioChange, true)}
-                            </div>
-                            <div>
-                                <label className="block text-gray-300 mb-2 text-sm font-medium">Email</label>
-                                {renderInput('email', 'email', 'your@email.com', formData.Bio.email, handleBioChange, true)}
-                            </div>
-                             <div>
-                                <label className="block text-gray-300 mb-2 text-sm font-medium">Phone</label>
-                                {renderInput('phone', 'tel', '1234567890', formData.Bio.phone, handleBioChange, true)}
-                            </div>
+                            {renderInput('firstname', 'text', 'Jane', formData.Bio.firstname, handleBioChange, true)}
+                            {renderInput('lastname', 'text', 'Doe', formData.Bio.lastname, handleBioChange, true)}
+                            {renderInput('email', 'email', 'your@email.com', formData.Bio.email, handleBioChange, true)}
+                            {renderInput('phone', 'tel', '1234567890', formData.Bio.phone, handleBioChange, true)}
                         </div>
                     )}
 
-                    {/* Step 3: Profile Details */}
                     {step === 3 && (
                         <div className="space-y-6 animate-fadeIn">
+                            {renderInput('Avatar', 'text', 'https://...', formData.Avatar, handleInputChange)}
                             <div>
-                                <label className="block text-gray-300 mb-2 text-sm font-medium">Avatar URL</label>
-                                {renderInput('Avatar', 'text', 'https://...', formData.Avatar, handleInputChange)}
-                            </div>
-                             <div>
                                 <label className="block text-gray-300 mb-2 text-sm font-medium">Skills</label>
                                 <div className="flex items-center gap-2">
-                                     <input 
+                                    <input 
                                         type="text"
                                         value={skillInput}
                                         onChange={(e) => setSkillInput(e.target.value)}
@@ -229,34 +183,22 @@ export const Signup = () => {
                             </div>
                         </div>
                     )}
+                    
+                    {error && (
+                        <div className="text-center text-sm text-red-400 bg-red-500/10 p-3 mt-4 rounded-lg border border-red-500/30">
+                            {error}
+                        </div>
+                    )}
 
-                    {/* Navigation Buttons */}
                     <div className="flex gap-4 pt-4">
-                        {step > 1 && (
-                            <button 
-                                type="button" 
-                                onClick={handleBack}
-                                className="w-full bg-gray-700 text-white px-6 py-3 rounded-xl hover:bg-gray-600 transition-all duration-300 font-medium"
-                            >
-                                Back
-                            </button>
-                        )}
+                        {step > 1 && <button type="button" onClick={handleBack} className="w-full bg-gray-700 text-white px-6 py-3 rounded-xl hover:bg-gray-600 transition-all duration-300 font-medium">Back</button>}
                         {step < 3 ? (
-                            <button 
-                                type="button" 
-                                onClick={handleNext}
-                                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
-                            >
-                                Next
-                            </button>
+                            <button type="button" onClick={handleNext} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105">Next</button>
                         ) : (
-                            <button 
-                            onClick={handleSubmit}                            
-                                type="submit" 
-                                className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-green-500/25 font-medium"
-                            >
-                                Create Account
-                            </button>
+                            <button type="submit"
+                            disabled={isLoading}
+                             className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-green-500/25 font-medium">
+                                {isLoading ? 'Creating Account...' : 'Create Account'}</button>
                         )}
                     </div>
                 </form>
@@ -264,9 +206,7 @@ export const Signup = () => {
                 <div className="mt-6 text-center animate-fadeIn animation-delay-1500">
                     <p className="text-gray-400 text-sm">
                         Already have an account? 
-                        <button onClick={() => {
-                            navigate('/signin');
-                        }} className="text-blue-400 hover:text-blue-300 ml-1 transition-colors duration-300 font-medium">
+                        <button onClick={() => navigate('/signin')} className="text-blue-400 hover:text-blue-300 ml-1 transition-colors duration-300 font-medium">
                             Sign In
                         </button>
                     </p>
@@ -274,24 +214,9 @@ export const Signup = () => {
             </div>
 
             <style jsx>{`
-                /* Your existing keyframes and animation classes are great, no changes needed here */
-                @keyframes blob {
-                    0% { transform: translate(0px, 0px) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                    100% { transform: translate(0px, 0px) scale(1); }
-                }
-                
-                @keyframes slideUp {
-                    from { opacity: 0; transform: translateY(30px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-
+                @keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
+                @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
                 .animate-blob { animation: blob 7s infinite; }
                 .animate-slideUp { animation: slideUp 0.8s ease-out; }
                 .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; opacity: 0; }

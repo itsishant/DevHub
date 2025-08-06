@@ -7,20 +7,28 @@ import { Hash } from "../utils/passwordBcrypt";
 import { findUser } from "../utils/findUser";
 import { generateToken } from "../utils/createToken";
 
-
 export class AuthController {
  static async Signup (req: Request, res: Response) {
     const {username, password, Bio, Avatar} = req.body;
+    const email = Bio[0].email;
+    const phone = Bio[0].phone;
 
     // check zod
     const result = SignUpZod.safeParse(req.body);
     if(!result.success) return res.status(411).json({message: "Body field required"})
 
-    const existingUser = await findUser(username);
+    const existingUser = await findUser(username, email, phone);
     if(existingUser){
-        return res.status(409).json({message: "User alread exists"})
+          if (existingUser.username === username) {
+                    return res.status(409).json({ message: "Username is already taken." });
+                }
+                if (existingUser.Bio.some(bio => bio.email === email)) {
+                    return res.status(409).json({ message: "An account with this email already exists." });
+                }
+                if (existingUser.Bio.some(bio => bio.phone === phone)) {
+                    return res.status(409).json({ message: "An account with this phone number already exists." });
+        }
     }
-
     try{
     
     const Hashed = await Hash(password, 10);
