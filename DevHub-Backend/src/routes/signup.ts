@@ -6,18 +6,20 @@ import { JWT_SECRET } from "../utils/config";
 import { Hash } from "../utils/passwordBcrypt";
 import { findUser } from "../utils/findUser";
 import { generateToken } from "../utils/createToken";
+import axios from "axios";
+import dotenv from 'dotenv';
+dotenv.config();
 
-export class    AuthController {
+export class AuthController {
  static async Signup (req: Request, res: Response) {
     const {username, password, Bio, Avatar} = req.body;
     const email = Bio[0].email;
-    const phone = Bio[0].phone;
 
     // check zod
     const result = SignUpZod.safeParse(req.body);
-    if(!result.success) return res.status(411).json({message: "Body field required"})
+    if(!result.success) return res.status(411).json({message: "Please enter correct details"})
 
-    const existingUser = await findUser(username, email, phone);
+    const existingUser = await findUser(username, email);
     if(existingUser){
           if (existingUser.username === username) {
                     return res.status(409).json({ message: "Username is already taken." });
@@ -25,9 +27,6 @@ export class    AuthController {
                 if (existingUser.Bio.some(bio => bio.email === email)) {
                     return res.status(409).json({ message: "An account with this email already exists." });
                 }
-                if (existingUser.Bio.some(bio => bio.phone === phone)) {
-                    return res.status(409).json({ message: "An account with this phone number already exists." });
-        }
     }
     try{
     
@@ -48,4 +47,48 @@ export class    AuthController {
         console.log("Error "+error);
     }
 }
+
+static async verifyEmail (req: Request, res: Response) {
+    const ABSTRACT_API_KEY = process.env.API_KEY as string;
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+    }
+
+    try {
+        const apiResponse = await axios.get(`https://emailvalidation.abstractapi.com/v1/?api_key=${ABSTRACT_API_KEY}&email=${email}`);
+        if (apiResponse.data.deliverability === 'DELIVERABLE') {
+            return res.status(200).json({ status: 'verified', message: 'Email is valid' });
+        } else {
+            // This catches non-existent users, disposable emails, etc.
+            return res.status(422).json({ status: 'error', message: 'Email does not exist' });
+        }
+
+    } catch (error) {
+        console.error('Error verifying email:', error);
+        // This catches network errors or problems with the API service itself.
+        return res.status(500).json({ status: 'error', message: 'Could not complete email verification at this time.' });
+    }
+};
+
+ static async checkUsername(req: Request, res: Response) {
+        const { username } = req.body;
+        const existingUser = await user.findOne({ username });
+
+        if (existingUser) {
+            return res.status(409).json({ message: "Username is already taken." });
+        }
+        return res.status(200).json({ message: "Username is available." });
+    }
+
+    static async checkEmail(req: Request, res: Response) {
+        const { email } = req.body;
+        const existingUser = await user.findOne({ 'Bio.email': email });
+
+        if (existingUser) {
+            return res.status(409).json({ message: "An account with this email already exists." });
+        }
+        return res.status(200).json({ message: "Email is available." });
+    }
 }

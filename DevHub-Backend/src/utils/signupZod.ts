@@ -8,7 +8,6 @@ export const SignUpZod = z.object({
       firstname: z.string(),
       lastname: z.string(),
       email: z.string(),
-      phone: z.string().min(10).max(10),
       skills: z.array(z.string())
     })
   ),

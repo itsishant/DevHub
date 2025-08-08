@@ -188,7 +188,7 @@ const SampleCodeCard = () => (
 const SampleNoteCard = () => (
     <motion.div initial={{ y: -10, rotate: -5 }} whileInView={{ y: 0, rotate: 5, transition: { duration: 0.5 }}} viewport={{ once: true }} className="absolute w-64 bg-[#f8e9a2] text-gray-800 rounded-lg shadow-xl p-4 z-20">
         <h4 className="font-bold border-b border-gray-400 pb-1 mb-2">React Hooks Quick Tip</h4>
-        <p className="text-xs">Remember to use `useEffect` with an empty dependency array `[]` to run an effect only once...</p>
+        <p className="text-xs ">Remember to use `useEffect` with an empty dependency array `[]` to run an effect only once...</p>
     </motion.div>
 );
 

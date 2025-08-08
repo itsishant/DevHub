@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
+import { Button } from '../components/ui/Button';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   // --- STATE ---
@@ -31,6 +33,7 @@ const Dashboard = () => {
     trending: null,
     messages: null
   });
+  const navigate = useNavigate();
 
   const token = localStorage.getItem('token');
   const userId = token ? jwtDecode(token).id : null;
@@ -41,6 +44,7 @@ const Dashboard = () => {
   setLoading(prev => ({ ...prev, posts: true }));
   try {
     const response = await axios.get("http://localhost:3000/api/v1/content");
+    console.log(response);
     const sortedPosts = (response.data.posts || []).sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
@@ -159,7 +163,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center space-x-8">
-              <div className=" flex pr-[160px] relative">
+              <div className=" flex pr-[90px] relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input type="text" placeholder="Search DevHub..." className="bg-gray-800 text-white pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 w-40 md:w-[550px]" />
               </div>
@@ -169,6 +173,20 @@ const Dashboard = () => {
               </button>
               <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
+              </div>
+              <div>
+             
+<button
+      className="flex items-center bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+onClick={() => {
+  setTimeout(() => {
+  localStorage.removeItem("token");
+  navigate("/")
+  }, 1000)
+}}
+    >
+      Logout
+    </button>
               </div>
             </div>
           </div>
@@ -278,7 +296,7 @@ const Dashboard = () => {
 <div className="rounded-full bg-purple-700 p-3  flex space-x-1 w-12 h-12 items-center justify-center">
   {post.userId?.Bio?.map((b, i) => (
     <span key={i} className="text-black  font-bold text-xl">
-      {b.firstname[0]}
+      {b.firstname[0].toUpperCase()}
     </span>
   )) || '👤'}
 </div>

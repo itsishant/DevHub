@@ -6,6 +6,8 @@ import { AuthController as getPostController} from "./routes/posts";
 import { AuthController as friendController} from "./routes/friends";
 import { AuthController as messageController } from "./routes/message";
 import { AuthController as receiveMessageContoller } from "./routes/message";
+import { AuthController as verifyEmail } from "./routes/signup";
+import { AuthController } from "./routes/signup";
 import { authMidddleWare } from "./Authmiddleware";
 import cors from "cors";
 
@@ -14,6 +16,9 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/api/v1/signup", SignUpController.Signup);
+app.post('/api/v1/check-username', AuthController.checkUsername);
+app.post('/api/v1/check-email', AuthController.checkEmail);
+app.post("/api/v1/verify-email", verifyEmail.verifyEmail);
 app.post("/api/v1/signin", SignInController.Signin);
 app.post("/api/v1/posts", authMidddleWare, createPostController.newPost);
 app.get("/api/v1/content", getPostController.getPost);

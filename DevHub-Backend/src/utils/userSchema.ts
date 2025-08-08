@@ -10,7 +10,6 @@ export const userSchema = new Schema <User> ({
         firstname: { type: String, required: true},
         lastname: { type: String, required: true},
         email: { type: String, required: true, unique: true},
-        phone: { type: Number, required: true, unique: true},
         skills: [{ type: String }]
     }],
     Avatar: { type: String, default: "" },

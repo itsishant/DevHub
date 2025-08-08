@@ -9,7 +9,6 @@ export interface Database{
             firstname: string,
             lastname: string,
             email: string,
-            phone: number,
             skills: string[],
         }
     ],
