@@ -14,5 +14,15 @@ export const userSchema = new Schema <User> ({
         skills: [{ type: String }]
     }],
     Avatar: { type: String, default: "" },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { 
+        type: String, 
+        default: () => {
+            const now = new Date();
+            return now.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+            });
+        }
+    }
 })

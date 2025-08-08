@@ -14,7 +14,7 @@ export interface Database{
         }
     ],
     Avatar: string,
-    createdAt: Date,
+    createdAt: string,
     fromUser: ObjectId,
     toUser: ObjectId,
     status: string,
@@ -26,4 +26,5 @@ export interface Database{
     receiverId: ObjectId,
     text: string,
     seen: boolean
+    likes: string[]
 }

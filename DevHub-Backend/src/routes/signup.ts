@@ -7,7 +7,7 @@ import { Hash } from "../utils/passwordBcrypt";
 import { findUser } from "../utils/findUser";
 import { generateToken } from "../utils/createToken";
 
-export class AuthController {
+export class    AuthController {
  static async Signup (req: Request, res: Response) {
     const {username, password, Bio, Avatar} = req.body;
     const email = Bio[0].email;

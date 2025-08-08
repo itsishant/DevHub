@@ -115,7 +115,7 @@ export const Signup = () => {
     );
     
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-950 relative overflow-hidden">
+        <div className="flex items-center justify-center min-h-screen bg-black relative overflow-hidden">
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
                 <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -196,6 +196,7 @@ export const Signup = () => {
                             <button type="button" onClick={handleNext} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105">Next</button>
                         ) : (
                             <button type="submit"
+                            onClick={() => navigate("/dashboard")}
                             disabled={isLoading}
                              className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-green-500/25 font-medium">
                                 {isLoading ? 'Creating Account...' : 'Create Account'}</button>
