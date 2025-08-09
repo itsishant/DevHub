@@ -202,17 +202,16 @@ onClick={() => {
                 <Sparkles className="w-4 h-4" />
                 <span>Your Stats</span>
               </h3>
-              {loading.stats
-                ? <Loader2 className="w-5 h-5 animate-spin text-purple-400 mx-auto" />
-                : (
+              {loading.stats &&
+                 (
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-300">Posts</span>
-                      <span className="text-pink-400 font-bold text-lg">{userStats.posts}</span>
+                      <span className="text-pink-400 font-bold text-lg">{ posts ? posts.filter(post => post.userId?._id === userId).length : 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-300">Friends</span>
-                      <span className="text-cyan-400 font-bold text-lg">{userStats.friends}</span>
+                      <span className="text-cyan-400 font-bold text-lg">{friends.length}</span>
                     </div>
                   </div>
                 )
