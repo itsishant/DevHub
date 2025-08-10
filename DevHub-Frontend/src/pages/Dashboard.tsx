@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [newPost, setNewPost] = useState('');
   const [chatMessage, setChatMessage] = useState('');
   const [selectedFriend, setSelectedFriend] = useState(null);
+  const [like, setLike] = useState({});
   const [loading, setLoading] = useState({
     posts: true,
     friends: true,
@@ -39,27 +40,25 @@ const Dashboard = () => {
   const userId = token ? jwtDecode(token).id : null;
 
   // --- FETCH POSTS on mount ---
-
   const fetchPosts = async () => {
-  setLoading(prev => ({ ...prev, posts: true }));
-  try {
-    const response = await axios.get("http://localhost:3000/api/v1/content");
-    console.log(response);
-    const sortedPosts = (response.data.posts || []).sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
-    setPosts(sortedPosts);
-    setLoading(prev => ({ ...prev, posts: false }));
-  } catch (err) {
-    setError(prev => ({ ...prev, posts: 'Failed to load posts' }));
-    setLoading(prev => ({ ...prev, posts: false }));
-  }
-};
+    setLoading(prev => ({ ...prev, posts: true }));
+    try {
+      const response = await axios.get("http://localhost:3000/api/v1/content");
+      console.log(response);
+      const sortedPosts = (response.data.posts || []).sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      setPosts(sortedPosts);
+      setLoading(prev => ({ ...prev, posts: false }));
+    } catch (err) {
+      setError(prev => ({ ...prev, posts: 'Failed to load posts' }));
+      setLoading(prev => ({ ...prev, posts: false }));
+    }
+  };
 
   useEffect(() => {
-  fetchPosts();
-}, []);
-
+    fetchPosts();
+  }, []);
 
   // --- HANDLE POST SUBMIT ---
   const handlePostSubmit = async () => {
@@ -85,7 +84,7 @@ const Dashboard = () => {
     }
   };
 
-    const handleDeletePost = async (postId) => {
+  const handleDeletePost = async (postId) => {
     const token = localStorage.getItem("token");
     if(token){
         try{
@@ -99,41 +98,76 @@ const Dashboard = () => {
             console.error("Error deleting post:", error);
         }
     }
-}
+  }
 
-  // --- HANDLE LIKE ---
+  // --- HANDLE LIKE (FIXED VERSION) ---
   const handleLike = async (postId) => {
     if (!userId) {
       alert("Login required");
       return;
     }
-    // Optimistic update
-    setPosts(posts.map(p =>
+
+    // Find the current post to check if user already liked it
+    const currentPost = posts.find(p => p._id === postId);
+    const isCurrentlyLiked = currentPost?.likes?.includes(userId);
+
+    // Update the like state immediately for UI feedback
+    setLike(prev => ({
+      ...prev,
+      [postId]: !isCurrentlyLiked
+    }));
+
+    // Optimistic update for posts
+    setPosts(prevPosts => prevPosts.map(p =>
       p._id === postId
         ? {
-          ...p,
-          likes: p.likes.includes(userId)
-            ? p.likes.filter(id => id !== userId)
-            : [...p.likes, userId],
-        }
+            ...p,
+            likes: isCurrentlyLiked
+              ? p.likes.filter(id => id !== userId)
+              : [...(p.likes || []), userId],
+          }
         : p
     ));
+
     try {
       const res = await axios.post(
         `http://localhost:3000/api/v1/posts/${postId}/like`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPosts(posts.map(p =>
+      
+      // Update with server response
+      setPosts(prevPosts => prevPosts.map(p =>
         p._id === postId ? { ...p, likes: res.data.likes } : p
       ));
+      
+      // Update like state based on server response
+      setLike(prev => ({
+        ...prev,
+        [postId]: res.data.likes.includes(userId)
+      }));
+      
     } catch (err) {
       console.error("Failed to like post:", err);
-      // revert on error
-      setPosts(prev => [...prev]);
+      
+      // Revert optimistic updates on error
+      setLike(prev => ({
+        ...prev,
+        [postId]: isCurrentlyLiked
+      }));
+      
+      setPosts(prevPosts => prevPosts.map(p =>
+        p._id === postId
+          ? {
+              ...p,
+              likes: isCurrentlyLiked
+                ? [...(p.likes || []), userId]
+                : p.likes.filter(id => id !== userId),
+            }
+          : p
+      ));
     }
   };
-
 
   // --- RENDER HELPERS ---
   const renderContent = (loadingState, errorState, data, emptyMessage, renderFunction) => {
@@ -146,48 +180,76 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-black text-white font-sans">
       {/* Navigation Header */}
-      <nav className="fixed top-0 w-full bg-black/80 backdrop-blur-lg border-b border-purple-500/20 z-50 shadow-lg shadow-purple-500/10">
+      <nav className="fixed top-0 w-full bg-slate-900 border-b border-slate-700 z-50 shadow-lg">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-800 rounded-lg flex items-center justify-center">
                   <Code className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">DevHub</h1>
+                <h1 className="text-xl font-bold text-white">DevHub</h1>
               </div>
               <div className="hidden md:flex space-x-2">
-                <button onClick={() => setActiveTab('feed')} className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${activeTab === 'feed' ? 'bg-purple-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-800'}`}>Feed</button>
-                <button onClick={() => setActiveTab('chat')} className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${activeTab === 'chat' ? 'bg-purple-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-800'}`}>Messages</button>
-                <button onClick={() => setActiveTab('friends')} className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${activeTab === 'friends' ? 'bg-purple-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-800'}`}>Network</button>
+                <button 
+                  onClick={() => setActiveTab('feed')} 
+                  className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
+                    activeTab === 'feed' 
+                      ? 'bg-slate-700 text-white' 
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  Feed
+                </button>
+                <button 
+                  onClick={() => navigate("/dashboard/message")} 
+                  className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
+                    activeTab === 'chat' 
+                      ? 'bg-slate-700 text-white' 
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  Messages
+                </button>
+                <button 
+                  onClick={() => setActiveTab('friends')} 
+                  className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
+                    activeTab === 'friends' 
+                      ? 'bg-slate-700 text-white' 
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  Network
+                </button>
               </div>
             </div>
-            <div className="flex items-center space-x-8">
-              <div className=" flex pr-[90px] relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input type="text" placeholder="Search DevHub..." className="bg-gray-800 text-white pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 w-40 md:w-[550px]" />
+            <div className="flex items-center space-x-6">
+              <div className="flex relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <input 
+                  type="text" 
+                  placeholder="Search DevHub..." 
+                  className="bg-slate-800 border border-slate-600 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 w-64 md:w-80" 
+                />
               </div>
-              <button className="relative p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-full transition-colors">
+              <button className="relative p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
                 <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-black"></span>
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
               </button>
-              <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
               </div>
-              <div>
-             
-<button
-      className="flex items-center bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-onClick={() => {
-  setTimeout(() => {
-  localStorage.removeItem("token");
-  navigate("/")
-  }, 1000)
-}}
-    >
-      Logout
-    </button>
-              </div>
+              <button
+                className="flex items-center bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                onClick={() => {
+                  setTimeout(() => {
+                    localStorage.removeItem("token");
+                    navigate("/")
+                  }, 1000)
+                }}
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
@@ -195,80 +257,115 @@ onClick={() => {
 
       <div className="pt-16 flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 w-[450px] h-full bg-black/80 backdrop-blur-xl border-r border-purple-500/20 p-4 overflow-y-auto hidden lg:block">
+        <aside className="fixed left-0 w-[450px] h-full bg-slate-900 border-r border-slate-700 p-6 overflow-y-auto hidden lg:block">
           <div className="space-y-6 mt-4">
-            <div className="bg-black/60 p-5 rounded-2xl border border-purple-500/30 shadow-lg shadow-purple-500/10">
-              <h3 className="text-sm font-semibold text-purple-300 mb-4 flex items-center space-x-2">
-                <Sparkles className="w-4 h-4" />
+            {/* Stats Card */}
+            <div className="bg-slate-800 p-6 rounded-xl border border-slate-600">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                <Sparkles className="w-5 h-5 text-blue-400" />
                 <span>Your Stats</span>
               </h3>
-              {loading.stats &&
-                 (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-300">Posts</span>
-                      <span className="text-pink-400 font-bold text-lg">{ posts ? posts.filter(post => post.userId?._id === userId).length : 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-300">Friends</span>
-                      <span className="text-cyan-400 font-bold text-lg">{friends.length}</span>
-                    </div>
-                  </div>
-                )
-              }
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-300">Posts</span>
+                  <span className="text-blue-400 font-bold text-lg">{posts ? posts.filter(post => post.userId?._id === userId).length : 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-300">Friends</span>
+                  <span className="text-purple-400 font-bold text-lg">{friends.length}</span>
+                </div>
+              </div>
             </div>
-            <div className="bg-black/60 p-5 rounded-2xl border border-purple-500/30 shadow-lg shadow-purple-500/10">
-              <h3 className="text-sm font-semibold text-purple-300 mb-4 flex items-center space-x-2">
-                <Zap className="w-4 h-4" />
+
+            {/* Trending Card */}
+             <div className="bg-slate-800  p-6 rounded-xl border border-slate-600">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                <Zap className="w-5 h-5 text-yellow-400" />
                 <span>Trending</span>
               </h3>
-              {renderContent(loading.trending, error.trending, trendingTags, "No trending topics.", () => (
-                <div className="space-y-2">
-                  {trendingTags.map((tag) => (
-                    <div
-                      key={tag}
-                      className="flex items-center justify-between text-sm hover:bg-purple-500/10 p-2 rounded-lg cursor-pointer"
-                    >
-                      <span className="text-purple-400 font-medium">#{tag}</span>
-                    </div>
-                  ))}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between hover:bg-slate-700 p-3 rounded-lg cursor-pointer transition-colors">
+                  <div className="flex-1">
+                    <span className="text-blue-400 font-medium text-sm">#ReactJS</span>
+                    <div className="text-xs text-slate-400 mt-1">12.5K posts</div>
+                  </div>
+                  <div className="text-xs text-green-400 font-medium">↗ 15%</div>
                 </div>
-              ))}
+                
+                <div className="flex items-center justify-between hover:bg-slate-700 p-3 rounded-lg cursor-pointer transition-colors">
+                  <div className="flex-1">
+                    <span className="text-blue-400 font-medium text-sm">#JavaScript</span>
+                    <div className="text-xs text-slate-400 mt-1">8.9K posts</div>
+                  </div>
+                  <div className="text-xs text-green-400 font-medium">↗ 8%</div>
+                </div>
+                
+                <div className="flex items-center justify-between hover:bg-slate-700 p-3 rounded-lg cursor-pointer transition-colors">
+                  <div className="flex-1">
+                    <span className="text-blue-400 font-medium text-sm">#Python</span>
+                    <div className="text-xs text-slate-400 mt-1">7.2K posts</div>
+                  </div>
+                  <div className="text-xs text-green-400 font-medium">↗ 22%</div>
+                </div>
+                
+                <div className="flex items-center justify-between hover:bg-slate-700 p-3 rounded-lg cursor-pointer transition-colors">
+                  <div className="flex-1">
+                    <span className="text-blue-400 font-medium text-sm">#NodeJS</span>
+                    <div className="text-xs text-slate-400 mt-1">5.6K posts</div>
+                  </div>
+                  <div className="text-xs text-red-400 font-medium">↘ 3%</div>
+                </div>
+                
+                <div className="flex items-center justify-between hover:bg-slate-700 p-3 rounded-lg cursor-pointer transition-colors">
+                  <div className="flex-1">
+                    <span className="text-blue-400 font-medium text-sm">#WebDev</span>
+                    <div className="text-xs text-slate-400 mt-1">4.8K posts</div>
+                  </div>
+                  <div className="text-xs text-green-400 font-medium">↗ 12%</div>
+              
+                </div>
+              </div>
             </div>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="lg:ml-64 flex-1 min-h-screen">
-          <div className="max-w-4xl mx-auto p-6">
+        <main className="lg:ml-80 flex-1 min-h-screen bg-black">
+          <div className="max-w-3xl mx-auto p-6">
             {activeTab === 'feed' && (
               <div className="space-y-6">
                 {/* New Post Box */}
-                <div className="bg-black/70 backdrop-blur-xl p-6 rounded-2xl border border-purple-500/30 shadow-xl shadow-purple-500/10">
+                <div className="bg-slate-900 p-6 rounded-xl border border-slate-700">
                   <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
                       <User className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1">
                       <textarea
                         value={newPost}
                         onChange={(e) => setNewPost(e.target.value)}
-                        placeholder="What's brewing in your code today?"
-                        className="w-full bg-black/40 border border-purple-500/30 text-white placeholder-gray-400 resize-none outline-none text-md p-4 rounded-xl focus:border-purple-500/60 focus:bg-black/60 transition-all duration-300"
+                        placeholder="What's on your mind?"
+                        className="w-full bg-slate-800 border border-slate-600 text-white placeholder-slate-400 resize-none outline-none text-base p-4 rounded-lg focus:border-blue-500 transition-all duration-200"
                         rows="3"
                       />
                       <div className="flex justify-between items-center mt-4">
-                        <div className="flex space-x-2 text-gray-400">
-                          <button className="hover:text-purple-400 transition-all p-2 rounded-full hover:bg-purple-500/10"><Code className="w-5 h-5" /></button>
-                          <button className="hover:text-cyan-400 transition-all p-2 rounded-full hover:bg-cyan-500/10"><Zap className="w-5 h-5" /></button>
-                          <button className="hover:text-pink-400 transition-all p-2 rounded-full hover:bg-pink-500/10"><Sparkles className="w-5 h-5" /></button>
+                        <div className="flex space-x-3 text-slate-400">
+                          <button className="hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-slate-800">
+                            <Code className="w-5 h-5" />
+                          </button>
+                          <button className="hover:text-yellow-400 transition-colors p-2 rounded-lg hover:bg-slate-800">
+                            <Zap className="w-5 h-5" />
+                          </button>
+                          <button className="hover:text-purple-400 transition-colors p-2 rounded-lg hover:bg-slate-800">
+                            <Sparkles className="w-5 h-5" />
+                          </button>
                         </div>
                         <button
                           onClick={handlePostSubmit}
-                          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/30 disabled:opacity-50 disabled:scale-100"
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={!newPost.trim()}
                         >
-                          Share
+                          Post
                         </button>
                       </div>
                     </div>
@@ -278,7 +375,7 @@ onClick={() => {
                 {/* Refresh Button */}
                 <button
                   onClick={fetchPosts}
-                  className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-lg font-semibold transition"
+                  className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors border border-slate-600"
                 >
                   Refresh Posts
                 </button>
@@ -289,70 +386,78 @@ onClick={() => {
                     {posts.map((post) => (
                       <div
                         key={post._id}
-                        className="bg-black/70 backdrop-blur-xl p-6 rounded-2xl border-2 border-neutral-800  shadow-xl shadow-purple-500/10 hover:shadow-purple-500/20 hover:border-purple-500/40 transition-all duration-300 group hover:scale-[1.01] transform"
+                        className="bg-slate-900 p-6 rounded-xl border border-slate-700 hover:border-slate-600 transition-all duration-200"
                       >
                         <div className="flex items-start space-x-4">
-<div className="rounded-full bg-purple-700 p-3  flex space-x-1 w-12 h-12 items-center justify-center">
-  {post.userId?.Bio?.map((b, i) => (
-    <span key={i} className="text-black  font-bold text-xl">
-      {b.firstname[0].toUpperCase()}
-    </span>
-  )) || '👤'}
-</div>
-                         <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
- {post.userId?.Bio?.map((b, i) => (
-    <span key={i} className=" font-poppinBold text-neutral-300 font-bold text-lg">
-      {b.firstname}
-    </span>
-  )) || '👤'}                              <span className="text-purple-400 text-sm">@{post.userId?.username|| 'username'}</span>
-                              
-                              <span className="text-gray-500">•</span>
-                              <div className='flex'>
-                              <span className="text-gray-400 text-sm">{new Date(post.createdAt).toISOString().split('T')[0]
-}</span> </div>
-<div className='flex justify-end pl-96'>
-{post.userId?._id === userId && <button onClick={() => handleDeletePost(post._id)} className="
-  flex items-center justify-center  gap-2
-px-4 py-2
-  font-semibold text-red-400
-  border border-red-500/50 rounded-lg
-  hover:bg-red-500/20 hover:text-red-300 hover:border-red-500
-  focus:outline-none focus:ring-2 focus:ring-red-500/50
-  transition-all duration-300
-">
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-  Delete
-</button>} </div>
-
+                          <div className="rounded-full bg-gradient-to-r from-blue-600 to-purple-600 p-3 w-12 h-12 flex items-center justify-center">
+                            {post.userId?.Bio?.map((b, i) => (
+                              <span key={i} className="text-white font-bold text-lg">
+                                {b.firstname[0].toUpperCase()}
+                              </span>
+                            )) || <User className="w-5 h-5 text-white" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center space-x-2">
+                                {post.userId?.Bio?.map((b, i) => (
+                                  <span key={i} className="text-white font-semibold text-lg">
+                                    {b.firstname}
+                                  </span>
+                                )) || <span className="text-white font-semibold">Unknown User</span>}
+                                <span className="text-slate-400 text-sm">@{post.userId?.username || 'username'}</span>
+                                <span className="text-slate-500">•</span>
+                                <span className="text-slate-400 text-sm">
+                                  {new Date(post.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              {post.userId?._id === userId && (
+                                <button 
+                                  onClick={() => handleDeletePost(post._id)} 
+                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2 rounded-lg transition-all duration-200 border border-red-500/30"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+                                  </svg>
+                                </button>
+                              )}
                             </div>
-                            <p className="text-gray-200 mb-4 leading-relaxed">{post.content}</p>
+                            
+                            <p className="text-slate-200 mb-4 leading-relaxed text-base">{post.content}</p>
+                            
                             {post.tags && post.tags.length > 0 && (
                               <div className="flex flex-wrap gap-2 mb-4">
                                 {post.tags.map((tag) => (
                                   <span
                                     key={tag.id || tag.name}
-                                    className="bg-black/60 border border-purple-500/40 text-purple-300 px-3 py-1 rounded-full text-xs font-medium cursor-pointer hover:bg-purple-500/20"
+                                    className="bg-slate-800 border border-slate-600 text-blue-400 px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:bg-slate-700 transition-colors"
                                   >
                                     #{tag.name}
                                   </span>
                                 ))}
                               </div>
                             )}
-                            <div className="flex items-center space-x-6 text-gray-400">
+                            
+                            <div className="flex items-center space-x-6 pt-2 border-t border-slate-700">
                               <button
                                 onClick={() => handleLike(post._id)}
-                                className="flex items-center space-x-2 hover:text-red-400 transition-all duration-200"
+                                className={`flex items-center space-x-2 transition-all duration-200 hover:scale-105 ${
+                                  (like[post._id] || post.likes?.includes(userId)) 
+                                    ? "text-red-500" 
+                                    : "text-slate-400 hover:text-red-400"
+                                }`}
                               >
-                                <Heart className="w-5 h-5" />
-                                <span className="font-semibold">{post.likes_count || post.likes.length || 0}</span>
+                                <Heart 
+                                  className={`w-5 h-5 transition-all duration-200 ${
+                                    (like[post._id] || post.likes?.includes(userId)) ? "fill-red-500" : ""
+                                  }`} 
+                                />
+                                <span className="font-medium">{post.likes?.length || 0}</span>
                               </button>
-                              <button className="flex items-center space-x-2 hover:text-cyan-400 transition-all duration-200">
+                              <button className="flex items-center space-x-2 text-slate-400 hover:text-blue-400 transition-colors">
                                 <MessageCircle className="w-5 h-5" />
-                                <span className="font-semibold">{post.comments_count || 0}</span>
+                                <span className="font-medium">{post.comments_count || 0}</span>
                               </button>
-                                
-
                             </div>
                           </div>
                         </div>
@@ -362,7 +467,6 @@ px-4 py-2
                 ))}
               </div>
             )}
-            {/* Add other tabs here (chat, friends) if needed */}
           </div>
         </main>
       </div>

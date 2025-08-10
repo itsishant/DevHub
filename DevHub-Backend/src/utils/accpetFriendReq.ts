@@ -7,3 +7,9 @@ export const friendRequest = async (fromUser, toUser) => {
         {new: true}
     )
 }
+
+export const declineRequest = async (fromUser: string, toUser: string) => {
+    return await friend.findOneAndDelete(
+        { fromUser, toUser, status: "pending" }
+    )
+}

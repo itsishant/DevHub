@@ -6,7 +6,7 @@ type Message = Pick<Database, "_id" | "senderId" | "receiverId" | "text" | "sent
 export const messageSchema = new Schema <Message> ({
     senderId: { type: Schema.Types.ObjectId, ref: 'User', required: true},
     receiverId: { type: Schema.Types.ObjectId, ref: 'User', required: true},
-    text: { type: String, rquired: true},
+    text: { type: String, required: true},
     sentAt: { type: Date,  default: Date.now },
     seen: { type: Boolean, default: false}
 })

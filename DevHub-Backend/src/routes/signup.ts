@@ -91,4 +91,15 @@ static async verifyEmail (req: Request, res: Response) {
         }
         return res.status(200).json({ message: "Email is available." });
     }
+
+    static async getAllUser(req: Request, res: Response) {
+        try{
+        const users = await user.find();
+        if(users) {
+            res.status(200).json({User: users});
+        }
+    } catch(error) {
+res.status(500).json({message: "Internal server error"})
+    }
+}
 }

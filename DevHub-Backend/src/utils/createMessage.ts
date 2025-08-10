@@ -9,6 +9,7 @@ export const MessageCreate = async (senderId, receiverId, text) => {
         senderId,
         receiverId,
         text,
+        sentAt: new Date()
     })
     return sendMessage;
 }
