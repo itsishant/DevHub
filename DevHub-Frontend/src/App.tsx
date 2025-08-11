@@ -8,7 +8,7 @@ import { motion } from "framer-motion"
 
 import { Signup } from './pages/Signup'
 import { Signin } from './pages/Signin'
-import  Dashboard  from './pages/Dashboard'
+import  {Dashboard}  from './pages/Dashboard'
 import { Message } from './pages/Message'
 
 const sectionVariants = {
@@ -51,11 +51,11 @@ function All() {
 
       <div className="relative z-10">
         <div className="relative w-full h-screen text-center flex flex-col items-center justify-center">
-          <div className="relative z-10 w-full">
+          <div className="relative z-10 w-full ">
             <Home 
               title="Dev Hub"
               welcomeMessage="Welcome to Dev Hub 🚀"
-              headLine="Connect. Code. Collaborate."
+              headLine="Connect․ Code․ Collaborate․"
               description="The social network where developers share knowledge"
               line="build strong friendships and grow together as one"
             />

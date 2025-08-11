@@ -57,9 +57,9 @@ export const Home = ({
       initial="hidden"
       animate="visible"
     >
-      <div className="mb-28">
+      <div className="mb-28 ">
         <motion.h1
-          className="text-8xl font-poppin tracking-tighter font-light text-center text-slate-200"
+          className="text-8xl tracking-tighter text-center font-sans font-semibold bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600 "
           variants={itemVariants}
         >
           {title}
@@ -72,7 +72,7 @@ export const Home = ({
         </p>
 
         <div className="relative w-fit mx-auto">
-          <motion.h2 className="text-7xl font-poppin text-center text-neutral-300 tracking-tight">
+          <motion.h2 className="text-7xl font-poppin text-center text-neutral-400 tracking-tight">
             {headLine}
           </motion.h2>
           <motion.img
@@ -83,7 +83,7 @@ export const Home = ({
           />
         </div>
 
-        <motion.p className="text-2xl text-center font-light text-neutral-500 tracking-tight">
+        <motion.p className="text-xl text-center font-light text-neutral-500 tracking-tight">
           {description}
           <p className="text-xl tracking-tight text-center text-neutral-500">
             {line}

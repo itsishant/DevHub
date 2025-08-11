@@ -6,5 +6,7 @@ export const friends = async (fromUser, toUser) => {
             {fromUser, toUser},
             {fromUser: toUser, toUser: fromUser}
         ]
-    }).populate("sender", "_id username Bio");
+    })
+    .populate("fromUser", "_id username Bio")
+    .populate("toUser", "_id username Bio");
 }

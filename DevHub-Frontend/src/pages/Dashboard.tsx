@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react';
 import {
   Search, Bell, MessageCircle, Heart, Share2, Settings, Send,
-  Users, Code, Zap, Sparkles, User, Loader2
+  Users, Code, Zap, Sparkles, User, Loader2,
+  UserPlus,
+  User2,
+  User2Icon,
+  UserCircle,
+  CircleUser
 } from 'lucide-react';
 import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
 import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
+import { motion } from "motion/react"
 
-const Dashboard = () => {
+export const Dashboard = () => {
   // --- STATE ---
   const [activeTab, setActiveTab] = useState('feed');
   const [posts, setPosts] = useState([]);
@@ -178,7 +184,8 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
+    <motion.div
+    className="min-h-screen bg-black text-white font-sans">
       {/* Navigation Header */}
       <nav className="fixed top-0 w-full bg-slate-900 border-b border-slate-700 z-50 shadow-lg">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
@@ -255,9 +262,15 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      <div className="pt-16 flex">
+      <motion.div
+      className="pt-16 flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 w-[450px] h-full bg-slate-900 border-r border-slate-700 p-6 overflow-y-auto hidden lg:block">
+        <motion.aside 
+        
+      initial={{opacity:0, x:-4}}
+      animate={{opacity:1, x:0}}
+      transition={{duration: 0.6, ease:"easeInOut"}}
+        className="fixed w-[360px] h-full bg-slate-900 border-r border-slate-700 p-6 overflow-y-auto hidden lg:block">
           <div className="space-y-6 mt-4">
             {/* Stats Card */}
             <div className="bg-slate-800 p-6 rounded-xl border border-slate-600">
@@ -278,7 +291,7 @@ const Dashboard = () => {
             </div>
 
             {/* Trending Card */}
-             <div className="bg-slate-800  p-6 rounded-xl border border-slate-600">
+             <div className="bg-slate-800 pb-2 p-6 rounded-xl border border-slate-600">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <Zap className="w-5 h-5 text-yellow-400" />
                 <span>Trending</span>
@@ -327,11 +340,11 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-        </aside>
+        </motion.aside>
 
         {/* Main Content */}
-        <main className="lg:ml-80 flex-1 min-h-screen bg-black">
-          <div className="max-w-3xl mx-auto p-6">
+        <main className=" flex-1 min-h-screen bg-gray-950 pl-[100px]">
+          <div className="max-w-3xl mx-auto p-6 ">
             {activeTab === 'feed' && (
               <div className="space-y-6">
                 {/* New Post Box */}
@@ -382,7 +395,11 @@ const Dashboard = () => {
 
                 {/* Posts Feed */}
                 {renderContent(loading.posts, error.posts, posts, "The feed is empty. Be the first to post!", () => (
-                  <div className="space-y-6">
+                  <motion.div
+                  initial={{opacity:0, y:0}}
+                  animate={{opacity:1, y:0}}
+                  transition={{duration:0.3, ease:"easeInOut"}}
+                  className="space-y-6">
                     {posts.map((post) => (
                       <div
                         key={post._id}
@@ -463,15 +480,76 @@ const Dashboard = () => {
                         </div>
                       </div>
                     ))}
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
           </div>
         </main>
+ 
+
+      </motion.div>
+ <motion.aside
+ initial={{opacity:0, x:4}}
+ animate={{opacity:1, x:0}}
+ transition={{duration: 0.6, ease:"easeInOut"}}
+ className="hidden lg:block fixed top-16 right-0 w-[290px] h-screen p-3 bg-slate-900 border-l border-slate-700 flex flex-col justify-between">
+  {/* Top scrollable content */}
+  <div className="overflow-y-auto">
+    <div className="text-neutral-100 font-semibold w-[265px] mt-8 rounded-xl bg-slate-800 p-4 border border-slate-600">
+      {/* Heading */}
+      <div className="flex items-center justify-center border-b border-slate-600 pb-3">
+        <User2 className="mr-2 text-blue-400" />
+        <span className="text-lg">Community Rules</span>
+      </div>
+
+      {/* Rules */}
+      <div className="text-base text-slate-300 mt-6 space-y-4">
+        <div className="flex items-start">
+          <span className="mr-1">🤝</span>
+          <span>Be respectful to everyone</span>
+        </div>
+        <div className="flex items-start">
+          <span className="mr-1">🗣️</span>
+          <span>No harassment, hate speech, or trolling</span>
+        </div>
+        <div className="flex items-start">
+          <span className="mr-1">📢</span>
+          <span>Post relevant and valuable content</span>
+        </div>
+        <div className="flex items-start">
+          <span className="mr-1">📜</span>
+          <span>Follow all platform guidelines</span>
+        </div>
       </div>
     </div>
+  </div>
+
+  {/* Sticky bottom contact section */}
+  <div className="border-t border-slate-600 p-3 mt-[68px]">
+    <h3 className="text-lg font-semibold text-neutral-100 mb-2">📬 Contact Us</h3>
+    <p className="text-slate-400 text-sm">Have questions or feedback? Reach out:</p>
+    <div className="mt-2 space-y-1 text-sm">
+      <p>✉️ <a href="mailto:shadowtitan2007@gmail.com" className="text-blue-400 hover:underline">support @shadowtitan2007.com</a></p>
+      <p>💬 <a href="#" className="text-blue-400 hover:underline">Live Chat</a></p>
+    </div>
+  </div>
+
+  <div className="border-t border-slate-600 mt-14 pt-4">
+  <div className="flex items-center justify-center text-slate-400 text-sm">
+    Made with 
+    <Heart className="mx-1 animate-pulse" 
+  size={16} 
+  fill="#ef4444" 
+  stroke="#ef4444" size={16} /> 
+    by <span className="ml-1 font-medium text-neutral-200">Ishant</span>
+  </div>
+</div>
+
+</motion.aside>
+
+
+
+    </motion.div>
   );
 };
-
-export default Dashboard;

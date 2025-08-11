@@ -9,12 +9,15 @@ export const getMessages = async (userId1: string, userId2: string) => {
             return null;
         }
 
-       const messages = await message.find({
-    $or: [
-        { senderId: userId1, receiverId: userId2 },
-        { senderId: userId2, receiverId: userId1 }
-    ]
-}).sort({ createdAt: 1 });
+        const messages = await message.find({
+            $or: [
+                { senderId: userId1, receiverId: userId2 },
+                { senderId: userId2, receiverId: userId1 }
+            ]
+        })
+        .sort({ sentAt: 1 }) 
+        .populate('senderId', 'username') 
+        .populate('receiverId', 'username');
 
         return messages;
     } catch (error) {

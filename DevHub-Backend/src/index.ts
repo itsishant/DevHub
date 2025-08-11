@@ -41,4 +41,3 @@ app.put("/api/v1/seenMessage", authMidddleWare, receiveMessageContoller.receiveM
 app.listen(3000, () => {
     console.log("Port is running at 3000");
 })
-
