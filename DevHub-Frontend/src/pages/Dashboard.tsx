@@ -6,7 +6,9 @@ import {
   User2,
   User2Icon,
   UserCircle,
-  CircleUser
+  CircleUser,
+  SearchCheckIcon,
+  SearchIcon
 } from 'lucide-react';
 import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
@@ -195,38 +197,41 @@ export const Dashboard = () => {
                 <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-800 rounded-lg flex items-center justify-center">
                   <Code className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-xl font-bold text-white">DevHub</h1>
+                <h1 className="text-xl font-bold text-white">Dev
+                  <span className='text-purple-600'> Hub</span>
+                </h1>
               </div>
               <div className="hidden md:flex space-x-2">
                 <button 
                   onClick={() => setActiveTab('feed')} 
-                  className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
+                  className={`px-4 py-2 rounded-lg transition-all hover:text-white duration-200 text-sm font-medium ${
                     activeTab === 'feed' 
-                      ? 'bg-slate-700 text-white' 
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      ? ' text-white' 
+                      : 'text-slate-300 '
                   }`}
                 >
                   Feed
                 </button>
                 <button 
                   onClick={() => navigate("/dashboard/message")} 
-                  className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
+                  className={`px-4 py-2 rounded-lg hover:text-white transition-all duration-200 text-sm font-medium ${
                     activeTab === 'chat' 
-                      ? 'bg-slate-700 text-white' 
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                     ? ' text-white' 
+                      : 'text-neutral-400'
                   }`}
                 >
                   Messages
                 </button>
                 <button 
-                  onClick={() => setActiveTab('friends')} 
-                  className={`px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
+                
+                  onClick={() => {navigate("/explore")}} 
+                  className={`px-4 flex items-center hover:text-white  py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
                     activeTab === 'friends' 
-                      ? 'bg-slate-700 text-white' 
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                     ? ' text-white' 
+                      : 'text-neutral-400 '
                   }`}
                 >
-                  Network
+                 <SearchIcon className='size-6 pr-2'/> Explore
                 </button>
               </div>
             </div>
