@@ -8,6 +8,7 @@ import { findUser } from "../utils/findUser";
 import { generateToken } from "../utils/createToken";
 import axios from "axios";
 import dotenv from 'dotenv';
+import { Me } from "../utils/findMe";
 dotenv.config();
 
 export class AuthController {
@@ -39,13 +40,27 @@ export class AuthController {
 
        return res.status(200).json({
             message: "User created successfully",
-            token: token
+            token: token,
         })
     }
 
     } catch(error) {
         console.log("Error "+error);
     }
+}
+
+static async getMe (req: Request, res: Response) {
+    try {
+    const foundUser = await Me((req as any).userId);
+
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ UserDetails: foundUser });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
 }
 
 static async verifyEmail (req: Request, res: Response) {
@@ -101,5 +116,6 @@ static async verifyEmail (req: Request, res: Response) {
     } catch(error) {
 res.status(500).json({message: "Internal server error"})
     }
+
 }
 }

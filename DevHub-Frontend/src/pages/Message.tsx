@@ -349,8 +349,9 @@ const handleSendMessage = async () => {
                 <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-800 rounded-lg flex items-center justify-center">
                   <Code className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-xl font-bold text-white">DevHub</h1>
-              </div>
+  <h1 className="text-xl font-bold text-white">Dev
+                  <span className='text-purple-600'> Hub</span>
+                </h1>              </div>
               <div className="hidden md:flex space-x-2">
                 <button 
                   onClick={() => {setActiveTab('feed')
@@ -367,7 +368,7 @@ const handleSendMessage = async () => {
                 <button 
                   onClick={() => navigate("/dashboard/message")} 
                   className={`px-4 py-2 rounded-lg hover:text-white transition-all duration-200 text-sm font-medium ${
-                    activeTab === 'chat' 
+                    activeTab === 'friends' 
                      ? ' text-white' 
                       : ''
                   }`}
@@ -378,7 +379,7 @@ const handleSendMessage = async () => {
                 
                   onClick={() => navigate("/explore")} 
                   className={`px-4 flex items-center hover:text-white py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
-                    activeTab === 'friends' 
+                    activeTab === 'chat' 
                      ? ' text-white' 
                       : 'text-neutral-400'
                   }`}
@@ -396,7 +397,9 @@ const handleSendMessage = async () => {
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
               </button>
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                <button onClick={() => navigate("/profile")}>
                 <User className="w-4 h-4 text-white" />
+                </button>
               </div>
               <button
                 className="flex items-center bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"

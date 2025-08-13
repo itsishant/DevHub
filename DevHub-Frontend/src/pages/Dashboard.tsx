@@ -209,7 +209,7 @@ export const Dashboard = () => {
                       ? ' text-white' 
                       : 'text-slate-300 '
                   }`}
-                >
+                 >
                   Feed
                 </button>
                 <button 
@@ -236,7 +236,7 @@ export const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center space-x-6">
-              <div className="flex relative">
+              <div className="flex relative pr-[95px]">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <input 
                   type="text" 
@@ -249,7 +249,9 @@ export const Dashboard = () => {
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
               </button>
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                <button onClick={() => navigate("/profile")}>
                 <User className="w-4 h-4 text-white" />
+                </button>
               </div>
               <button
                 className="flex items-center bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"

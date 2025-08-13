@@ -11,6 +11,7 @@ import { Signin } from './pages/Signin'
 import  {Dashboard}  from './pages/Dashboard'
 import { Message } from './pages/Message'
 import { Explore } from './pages/Explore'
+import { Profile } from './pages/Profile'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -160,6 +161,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/message" element={<Message />} />
         <Route path="/explore" element={<Explore />} />
+        <Route path='/profile' element={<Profile />} />
       </Routes>
     </BrowserRouter>
   )
