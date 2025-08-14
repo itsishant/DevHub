@@ -47,4 +47,4 @@ app.put("/api/v1/seenMessage", authMiddleWare, receiveMessageContoller.receiveMe
 
 server.listen(3000, () => {
     console.log("HTTP + WebSocket running on port 3000");
-})
+}) 
