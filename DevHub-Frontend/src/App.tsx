@@ -45,7 +45,7 @@ function All() {
           lightSpread={9}
           rayLength={0.8}
           followMouse={true}
-          mouseInfluence={false}
+          mouseInfluence={0}
           noiseAmount={0.1}
           distortion={0.05}
         />
