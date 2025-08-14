@@ -5,14 +5,14 @@ import {
   Code,
   User,
   Bell,
-  SearchIcon
+  SearchIcon,
+  Menu
 } from 'lucide-react';
 import axios, { AxiosError } from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { Route, useNavigate } from 'react-router-dom';
 import { motion } from "motion/react"
 
-// It's good practice to define types for your data structures
 interface UserProfile {
   _id: string;
   username: string;
@@ -25,17 +25,15 @@ interface UserProfile {
 
 interface FriendRequest {
   _id: string;
-  sender: UserProfile; // The 'fromUser' from backend will be mapped to this
+  sender: UserProfile;
   receiver: string;
   status: string;
 }
 
-// Added type for message objects for better type safety
-// At the top of your file
 interface MessageData {
   _id: string;
-  sender: Partial<UserProfile>; // Now an object, can be partial
-  receiver: Partial<UserProfile>; // Now an object, can be partial
+  sender: Partial<UserProfile>;
+  receiver: Partial<UserProfile>;
   text: string;
   createdAt: string;
 }
@@ -45,18 +43,19 @@ export const Explore = () => {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [friends, setFriends] = useState<UserProfile[]>([]);
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
-  const [messages, setMessages] = useState<MessageData[]>([]); // Typed state
+  const [messages, setMessages] = useState<MessageData[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<UserProfile | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [sentRequestIds, setSentRequestIds] = useState<string[]>([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState({
     requests: true,
     friends: true,
     messages: false,
     allUsers: true,
   });
-  const [error, setError] = useState<{ [key: string]: string | null }>({ // Typed state
+  const [error, setError] = useState<{ [key: string]: string | null }>({
     requests: null,
     friends: null,
     messages: null,
@@ -82,7 +81,6 @@ export const Explore = () => {
       setFriendRequests(formattedRequests || []);
     } catch (err) {
       setError(prev => ({ ...prev, requests: 'Failed to load requests.' }));
-      console.error('Error fetching friend requests:', err);
     } finally {
       setLoading(prev => ({ ...prev, requests: false }));
     }
@@ -94,15 +92,12 @@ export const Explore = () => {
     setError(prev => ({ ...prev, friends: null }));
     try {
       const response = await axios.get('http://localhost:3000/api/v1/friends', authHeader);
-      // Backend returns friend documents. We must process them to get a simple list of friends.
       const friendProfiles = response.data.friends.map((friendship: any) => {
-          // Identify who the friend is in the relationship object
           return friendship.fromUser._id === userId ? friendship.toUser : friendship.fromUser;
-      }).filter(Boolean); // Filter out any potential null/undefined values
+      }).filter(Boolean);
       setFriends(friendProfiles || []);
     } catch (err) {
       setError(prev => ({ ...prev, friends: 'Failed to load friends.' }));
-      console.error('Error fetching friends:', err);
     } finally {
       setLoading(prev => ({ ...prev, friends: false }));
     }
@@ -114,18 +109,14 @@ export const Explore = () => {
     setError(prev => ({ ...prev, allUsers: null }));
     try {
       const response = await axios.get('http://localhost:3000/api/v1/getUser', authHeader);
-      // Backend key is 'User' with a capital 'U'
       setAllUsers(response.data.User || []);
     } catch (err) {
       setError(prev => ({ ...prev, allUsers: 'Failed to load users.' }));
-      console.error('Error fetching all users:', err);
     } finally {
       setLoading(prev => ({ ...prev, allUsers: false }));
     }
   };
 
-  // NOTE: Your backend is missing a route to GET messages for a specific chat.
-  // You'll need to add a route like `GET /api/v1/messages/:friendId` for this to work.
 const fetchMessages = async (friendId: string) => {
   if (!friendId) return;
   setLoading(prev => ({ ...prev, messages: true }));
@@ -135,7 +126,6 @@ const fetchMessages = async (friendId: string) => {
     setMessages(response.data.messages || []);
   } catch (err) {
     setError(prev => ({ ...prev, messages: 'Failed to load messages.' }));
-    console.error('Error fetching messages:', err);
   } finally {
     setLoading(prev => ({ ...prev, messages: false }));
   }
@@ -152,7 +142,7 @@ const fetchMessages = async (friendId: string) => {
     if (selectedFriend) {
       fetchMessages(selectedFriend._id);
     } else {
-        setMessages([]); // Clear messages when no friend is selected
+        setMessages([]);
     }
   }, [selectedFriend]);
 
@@ -161,7 +151,6 @@ const fetchMessages = async (friendId: string) => {
       await axios.post('http://localhost:3000/api/v1/request', { toUser: receiverId }, authHeader);
       setSentRequestIds(prev => [...prev, receiverId]);
     } catch (error) {
-      console.error('Error sending friend request:', error);
       if (axios.isAxiosError(error) && (error as AxiosError).response?.status === 411) {
         alert('Friend request already sent or you are already friends.');
       } else {
@@ -170,11 +159,8 @@ const fetchMessages = async (friendId: string) => {
     }
   };
 
-  
-
   const handleRejectRequest = async (senderId?: string) => {
     if (!senderId) {
-        console.error("Missing senderId for rejection");
         alert("Cannot reject request: sender information is missing.");
         return;
     }
@@ -182,7 +168,6 @@ const fetchMessages = async (friendId: string) => {
       await axios.put('http://localhost:3000/api/v1/decline', { fromUser: senderId }, authHeader);
       fetchFriendRequests();
     } catch (error) {
-      console.error('Error rejecting friend request:', error);
       alert('Could not reject request.');
     }
   }
@@ -192,16 +177,14 @@ const handleSendMessage = async () => {
 
   const messageContent = newMessage.trim();
 
-  // The correction is right here: change `content` to `text`
-  const optimisticMessage: MessageData = { // Added type for safety
+  const optimisticMessage: MessageData = {
     _id: Date.now().toString(),
-    sender: { _id: userId || '' }, // Corrected to match updated MessageData type (see below)
-    receiver: { _id: selectedFriend._id }, // Corrected as well
-    text: messageContent, // <-- CORRECTED
+    sender: { _id: userId || '' },
+    receiver: { _id: selectedFriend._id },
+    text: messageContent,
     createdAt: new Date().toISOString(),
   };
 
-  // Optimistically add message to UI
   setMessages(prev => [...prev, optimisticMessage]);
   setNewMessage('');
 
@@ -222,12 +205,8 @@ const handleSendMessage = async () => {
       );
     }
   } catch (error) {
-    console.error('❌ Error sending message:', error);
-    // Remove optimistic message on failure
     setMessages(prev => prev.filter(msg => msg._id !== optimisticMessage._id));
-    // ... your excellent error alert logic
     if (axios.isAxiosError(error)) {
-        // ... (no changes needed here)
     } else {
         alert('Failed to send message.');
     }
@@ -245,11 +224,8 @@ const handleSendMessage = async () => {
   const handleMarkAsSeen = async (friendId: string) => {
     if (!token) return;
     try {
-      // Your backend expects the person who sent the messages (the 'friendId')
       await axios.put('http://localhost:3000/api/v1/seenMessage', { senderId: friendId }, authHeader);
-      console.log(`Messages from ${friendId} marked as seen.`);
     } catch (error) {
-      console.error("Failed to mark messages as seen", error);
     }
 }
 useEffect(() => {
@@ -258,9 +234,9 @@ useEffect(() => {
       
       handleMarkAsSeen(selectedFriend._id); 
     } else {
-        setMessages([]); // Clear messages when no friend is selected
+        setMessages([]);
     }
-  }, [selectedFriend]); // This hook correctly depends on selectedFriend
+  }, [selectedFriend]);
 
   const filteredExploreUsers = allUsers.filter(user =>
     user._id !== userId &&
@@ -294,19 +270,19 @@ useEffect(() => {
     <div className="min-h-screen bg-slate-950 text-white">
         <nav className="fixed top-0 w-full bg-slate-900 border-b border-slate-700 z-50 shadow-lg">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-800 rounded-lg flex items-center justify-center">
-                  <Code className="w-5 h-5 text-white" />
+          <div className="flex justify-between items-center h-12 lg:h-16">
+            <div className="flex items-center space-x-2 lg:space-x-8">
+              <div className="flex items-center space-x-2 lg:space-x-3">
+                <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-r from-purple-600 to-blue-800 rounded-lg flex items-center justify-center">
+                  <Code className="w-3 h-3 lg:w-5 lg:h-5 text-white" />
                 </div>
-  <h1 className="text-xl font-bold text-white">Dev
-                  <span className='text-purple-600'> Hub</span>
+  <h1 className="text-lg lg:text-xl font-bold text-white">Dev
+                  <span className='text-purple-600'>Hub</span>
                 </h1>              </div>
               <div className="hidden md:flex space-x-2">
                 <button 
                   onClick={() => navigate("/dashboard")} 
-                  className={`px-4 py-2 rounded-lg hover:text-white transition-all duration-200 text-sm font-medium ${
+                  className={`px-3 lg:px-4 py-2 rounded-lg hover:text-white transition-all duration-200 text-xs lg:text-sm font-medium ${
                     activeTab === 'feed' 
                       ? ' text-white' 
                       : 'text-neutral-400'
@@ -316,7 +292,7 @@ useEffect(() => {
                 </button>
                 <button 
                   onClick={() => navigate("/dashboard/message")} 
-                  className={`px-4 py-2 rounded-lg hover:text-white transition-all duration-200 text-sm font-medium ${
+                  className={`px-3 lg:px-4 py-2 rounded-lg hover:text-white transition-all duration-200 text-xs lg:text-sm font-medium ${
                     activeTab === 'chat' 
                       ? ' text-white' 
                       : 'text-neutral-400'
@@ -325,34 +301,79 @@ useEffect(() => {
                   Messages
                 </button>
                 <button 
-                
                   onClick={() => {navigate("/explore")
                     setActiveTab("explore")
                   }} 
-                  className={`px-4 flex items-center hover:text-white py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
+                  className={`px-3 lg:px-4 flex items-center hover:text-white py-2 rounded-lg transition-all duration-200 text-xs lg:text-sm font-medium ${
                     activeTab === 'friends' 
                       ? ' text-white' 
                       : ''
                   }`}
                 >
-                 <SearchIcon className='size-6 pr-2'/> Explore
+                 <SearchIcon className='size-4 lg:size-6 pr-1 lg:pr-2'/> Explore
                 </button>
               </div>
             </div>
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2 lg:space-x-6">
               <div className="flex relative">
               </div>
-              <button className="relative p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
+              <button className="relative p-1 lg:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+                <Bell className="w-4 h-4 lg:w-5 lg:h-5" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 lg:w-3 lg:h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
               </button>
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
                <button onClick={() => navigate("/profile")}>
-                <User className="w-4 h-4 text-white" />
+                <User className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
                 </button>
               </div>
               <button
-                className="flex items-center bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                className="hidden md:flex items-center bg-red-600 text-white py-1 lg:py-2 px-3 lg:px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 text-xs lg:text-sm"
+                onClick={() => {
+                  setTimeout(() => {
+                    localStorage.removeItem("token");
+                    navigate("/")
+                  }, 1000)
+                }}
+              >
+                Logout
+              </button>
+              <button 
+                className="md:hidden p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {isMobileMenuOpen && (
+          <motion.div 
+          initial={{opacity:0, y:-1}}
+          animate={{opacity:1, y:0}}
+          transition={{duration: 0.3, ease: "easeInOut"}}
+          className="md:hidden bg-slate-800 border-t border-slate-700">
+            <div className="px-4 py-3 space-y-2">
+              <button 
+                onClick={() => {navigate("/dashboard"); setIsMobileMenuOpen(false);}} 
+                className="block w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors text-sm"
+              >
+                Feed
+              </button>
+              <button 
+                onClick={() => {navigate("/dashboard/message"); setIsMobileMenuOpen(false);}} 
+                className="block w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors text-sm"
+              >
+                Messages
+              </button>
+              <button 
+                onClick={() => {navigate("/explore"); setActiveTab("explore"); setIsMobileMenuOpen(false);}} 
+                className="block w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors text-sm"
+              >
+                Explore
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-red-400 hover:text-red-300 hover:bg-slate-700 rounded-lg transition-colors text-sm"
                 onClick={() => {
                   setTimeout(() => {
                     localStorage.removeItem("token");
@@ -363,49 +384,54 @@ useEffect(() => {
                 Logout
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        )}
       </nav>
 
       <motion.div 
-      className="max-w-6xl mx-auto mt-16 p-6">
+      className="max-w-6xl mx-auto mt-12 lg:mt-16 p-4 lg:p-6">
         {activeTab === 'explore' && (
           <motion.div 
           className="space-y-4">
             <motion.div 
-            
             initial={{opacity:0, x:0}}
             animate={{opacity:1, x:1}}
             transition={{duration: 0.4, ease:"easeInOut"}}> 
-            <h2 className="text-2xl font-sans font-bold text-neutral-300 mt-2  mb-8">Explore Users</h2> </motion.div>
-            <div className="relative mb-4 ">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-              <input type="text" placeholder="Search users by name or username..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-800 border border-slate-700 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <h2 className="text-xl lg:text-2xl font-sans font-bold text-neutral-300 mt-2 mb-6 lg:mb-8">Explore Users</h2> </motion.div>
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search users by name or username..." 
+                value={searchQuery} 
+                onChange={(e) => setSearchQuery(e.target.value)} 
+                className="w-full bg-slate-800 border border-slate-700 text-white text-sm lg:text-base pl-10 pr-4 py-2 lg:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              />
             </div>
             {renderList(loading.allUsers, error.allUsers, filteredExploreUsers, "No new users found.", (user: UserProfile) => (
               <motion.div
-              
       initial={{opacity:0, y:10}}
       animate={{opacity:1, y:0}}
       transition={{duration:0.8, ease:"easeInOut"}}
-              key={user._id} className="bg-slate-900 p-6 rounded-xl border border-slate-700 flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-800 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">{getDisplayInitial(user)}</span>
+              key={user._id} className="bg-slate-900 p-4 lg:p-6 rounded-xl border border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
+                <div className="flex items-center space-x-3 lg:space-x-4 w-full sm:w-auto">
+                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-r from-purple-600 to-blue-800 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-base lg:text-lg">{getDisplayInitial(user)}</span>
                   </div>
-                  <div>
-                    <h3 className="text-white text-lg font-semibold">{getDisplayName(user)}</h3>
-                    <p className="text-slate-400 text-sm">@{user.username}</p>
+                  <div className="flex-1 sm:flex-none">
+                    <h3 className="text-white text-base lg:text-lg font-semibold">{getDisplayName(user)}</h3>
+                    <p className="text-slate-400 text-xs lg:text-sm">@{user.username}</p>
                   </div>
                 </div>
-                <div className="flex space-x-3">
+              
+                <div className="flex space-x-3 sm:w-auto">
                   {sentRequestIds.includes(user._id) ? (
-                    <button disabled className="bg-slate-600 text-slate-300 px-4 py-2 rounded-lg flex items-center space-x-2 cursor-not-allowed">
-                      <Check className="w-4 h-4" /> <span>Request Sent</span>
+                    <button disabled className="bg-slate-600 text-slate-300 px-3 lg:px-4 py-2 rounded-lg flex items-center space-x-2 cursor-not-allowed text-sm lg:text-base w-full sm:w-auto justify-center">
+                      <Check className="w-3 h-3 lg:w-4 lg:h-4" /> <span>Request Sent</span>
                     </button>
                   ) : (
-                    <button onClick={() => handleAddFriend(user._id)} className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
-                      <UserPlus className="w-4 h-4" /> <span>Add Friend</span>
+                    <button onClick={() => handleAddFriend(user._id)} className="bg-blue-700 hover:bg-blue-800 text-white px-3 lg:px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors text-sm lg:text-base w-full sm:w-auto justify-center">
+                      <UserPlus className="w-3 h-3 lg:w-4 lg:h-4" /> <span>Add Friend</span>
                     </button>
                   )}
                 </div>

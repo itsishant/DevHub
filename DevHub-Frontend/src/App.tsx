@@ -58,11 +58,11 @@ function All() {
               title="Dev Hub"
               welcomeMessage="Welcome to Dev Hub 🚀"
               headLine="Connect․ Code․ Collaborate․"
-              description="The social network where developers share knowledge"
+              description="The social network where developers collaborate"
               line="build strong friendships and grow together as one"
             />
             
-            <div className='flex justify-center space-x-8 mt-8'>
+            <div className='flex justify-center space-x-8 mt-24 md:mt-8'>
               <Button label='Get Started' textColor='text-white' backgroundColor='bg-blue-600' onClick={() => navigate('/signup')} />
               <Button label='Sign in' textColor='text-slate-800' backgroundColor='bg-slate-200' onClick={() => navigate('/signin')} />
             </div>
@@ -140,9 +140,7 @@ function All() {
           <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center text-sm">
             <p>&copy; {new Date().getFullYear()} Dev Hub. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="#" className="hover:text-slate-300">About</a>
-              <a href="#" className="hover:text-slate-300">Contact</a>
-              <a href="#" className="hover:text-slate-300">Privacy Policy</a>
+              <span className="hover:text-slate-300">Made by Ishant</span>
             </div>
           </div>
         </footer>

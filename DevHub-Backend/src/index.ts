@@ -10,8 +10,13 @@ import { AuthController as verifyEmail } from "./routes/signup";
 import { AuthController } from "./routes/signup";
 import { authMiddleWare } from "./Authmiddleware";
 import cors from "cors";
+import http from "http";
+import { WebSocketServer } from "ws";
+import { createWebSocketServer } from "./scoket";
 
 const app = express();
+const server = http.createServer(app);
+createWebSocketServer(server);
 app.use(cors());
 app.use(express.json());
 
@@ -40,6 +45,6 @@ app.post("/api/v1/sendMessage", authMiddleWare, messageController.sendMessage);
 app.get('/api/v1/messages/:friendId', authMiddleWare, messageController.getMessages);
 app.put("/api/v1/seenMessage", authMiddleWare, receiveMessageContoller.receiveMessage);
 
-app.listen(3000, () => {
-    console.log("Port is running at 3000");
+server.listen(3000, () => {
+    console.log("HTTP + WebSocket running on port 3000");
 })

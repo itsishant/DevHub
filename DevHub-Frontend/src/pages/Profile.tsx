@@ -1,4 +1,4 @@
-import { Bell, Code, Search, User, Mail, AtSign, UserCheck, SearchIcon } from "lucide-react";
+import { Bell, Code, Search, User, Mail, AtSign, UserCheck, SearchIcon, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -10,8 +10,10 @@ export const Profile = () => {
   const [letter, setLetter] = useState();
   const [username, setUserName] = useState();
   const [lastName, setLastName] = useState();
+  
   const [email, setEmail] = useState();
   const [skills, setSkills] = useState([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const fetchCurrentUser = async () => {
@@ -39,69 +41,124 @@ export const Profile = () => {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <nav className="fixed top-0 w-full bg-slate-900 border-b border-slate-700 z-50 shadow-lg">
+       <nav className="fixed top-0 w-full bg-slate-900 border-b border-slate-700 z-50 shadow-lg">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-800 rounded-lg flex items-center justify-center">
-                  <Code className="w-5 h-5 text-white" />
+          <div className="flex justify-between items-center h-12 lg:h-16">
+            <div className="flex items-center space-x-2 lg:space-x-8">
+              <div className="flex items-center space-x-2 lg:space-x-3">
+                <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-r from-purple-600 to-blue-800 rounded-lg flex items-center justify-center">
+                  <Code className="w-3 h-3 lg:w-5 lg:h-5 text-white" />
                 </div>
-                <h1 className="text-xl font-bold text-white">
-                  Dev<span className="text-purple-600"> Hub</span>
-                </h1>
-              </div>
+  <h1 className="text-lg lg:text-xl font-bold text-white">Dev
+                  <span className='text-purple-600'>Hub</span>
+                </h1>              </div>
               <div className="hidden md:flex space-x-2">
-                <button
-                  onClick={() => navigate("/dashboard")}
-                  className={`px-4 py-2 rounded-lg transition-all hover:text-white duration-200 text-sm font-medium ${
-                    activeTab === "feed" ? " text-white" : "text-neutral-400"
+                <button 
+                  onClick={() => navigate("/dashboard")} 
+                  className={`px-3 lg:px-4 py-2 rounded-lg hover:text-white transition-all duration-200 text-xs lg:text-sm font-medium ${
+                    activeTab === 'feed' 
+                      ? ' text-white' 
+                      : 'text-neutral-400'
                   }`}
                 >
                   Feed
                 </button>
-                <button
-                  onClick={() => navigate("/dashboard/message")}
-                  className={`px-4 py-2 rounded-lg hover:text-white text-neutral-400 transition-all duration-200 text-sm font-medium ${
-                    activeTab === "friends" ? " text-white" : "text-neutral-400"
+                <button 
+                  onClick={() => navigate("/dashboard/message")} 
+                  className={`px-3 lg:px-4 py-2 rounded-lg hover:text-white transition-all duration-200 text-xs lg:text-sm font-medium ${
+                    activeTab === 'chat' 
+                      ? ' text-white' 
+                      : 'text-neutral-400'
                   }`}
                 >
                   Messages
                 </button>
-                <button
-                  onClick={() => navigate("/explore")}
-                  className={`px-4 flex items-center hover:text-white py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
-                    activeTab === "chat" ? " text-white" : "text-neutral-400"
+                <button 
+                  onClick={() => {navigate("/explore")
+                   
+                  }} 
+                  className={`px-3 lg:px-4 flex items-center hover:text-white py-2 rounded-lg transition-all duration-200 text-xs lg:text-sm font-medium ${
+                    activeTab === 'friends' 
+                      ? ' text-white' 
+                      : 'text-neutral-400'
                   }`}
                 >
-                  <SearchIcon className="size-6 pr-2" /> Explore
+                 <SearchIcon className='size-4 lg:size-6 pr-1 lg:pr-2'/> Explore
                 </button>
               </div>
             </div>
-            <div className="flex items-center space-x-6">
-              <button className="relative p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
+            <div className="flex items-center space-x-2 lg:space-x-6">
+              <div className="flex relative">
+              </div>
+              <button className="relative p-1 lg:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+                <Bell className="w-4 h-4 lg:w-5 lg:h-5" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 lg:w-3 lg:h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
               </button>
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                <button onClick={() => navigate("/profile")}>
-                  <User className="w-4 h-4 text-white" />
+              <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+               <button onClick={() => navigate("/profile")}>
+                <User className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
                 </button>
               </div>
               <button
-                className="flex items-center bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                className="hidden md:flex items-center bg-red-600 text-white py-1 lg:py-2 px-3 lg:px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 text-xs lg:text-sm"
                 onClick={() => {
                   setTimeout(() => {
                     localStorage.removeItem("token");
-                    navigate("/");
-                  }, 1000);
+                    navigate("/")
+                  }, 1000)
+                }}
+              >
+                Logout
+              </button>
+              <button 
+                className="md:hidden p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {isMobileMenuOpen && (
+          <motion.div 
+          initial={{opacity:0, y:-1}}
+          animate={{opacity:1, y:0}}
+          transition={{duration: 0.3, ease: "easeInOut"}}
+          className="md:hidden bg-slate-800 border-t border-slate-700">
+            <div className="px-4 py-3 space-y-2">
+              <button 
+                onClick={() => {navigate("/dashboard"); setIsMobileMenuOpen(false);}} 
+                className="block w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors text-sm"
+              >
+                Feed
+              </button>
+              <button 
+                onClick={() => {navigate("/dashboard/message"); setIsMobileMenuOpen(false);}} 
+                className="block w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors text-sm"
+              >
+                Messages
+              </button>
+              <button 
+                onClick={() => {navigate("/explore"); setActiveTab("explore"); setIsMobileMenuOpen(false);}} 
+                className="block w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors text-sm"
+              >
+                Explore
+              </button>
+              <button
+                className="block w-full text-left px-3 py-2 text-red-400 hover:text-red-300 hover:bg-slate-700 rounded-lg transition-colors text-sm"
+                onClick={() => {
+                  setTimeout(() => {
+                    localStorage.removeItem("token");
+                    navigate("/")
+                  }, 1000)
                 }}
               >
                 Logout
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        )}
       </nav>
 
       <motion.div
