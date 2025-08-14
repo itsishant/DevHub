@@ -66,7 +66,7 @@ export const Signup = () => {
         }
         setEmailVerification({ status: 'verifying', message: '' });
         try {
-            const response = await axios.post('http://localhost:3000/api/v1/verify-email', { email: formData.Bio.email });
+            const response = await axios.post('https://devhub-h0gg.onrender.com/api/v1/verify-email', { email: formData.Bio.email });
             setEmailVerification({ status: 'verified', message: response.data.message });
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Could not verify email. Please try again.';
@@ -90,14 +90,14 @@ export const Signup = () => {
         setIsChecking(true);
         try {
             if (step === 1) {
-                await axios.post('http://localhost:3000/api/v1/check-username', { username: formData.username });
+                await axios.post('https://devhub-h0gg.onrender.com/api/v1/check-username', { username: formData.username });
                 setStep(2);
             } else if (step === 2) {
                 if (emailVerification.status !== 'verified') {
                     setValidationErrors(prev => ({ ...prev, email: 'Please verify your email address first.' }));
                     return;
                 }
-                await axios.post('http://localhost:3000/api/v1/check-email', { email: formData.Bio.email });
+                await axios.post('https://devhub-h0gg.onrender.com/api/v1/check-email', { email: formData.Bio.email });
                 setStep(3);
             }
         } catch (err) {
@@ -114,7 +114,7 @@ export const Signup = () => {
 
     // ... (other functions are unchanged)
     const handleBack = () => setStep(prev => prev - 1);
-    const handleSubmit = async (e) => { e.preventDefault(); setError(''); setIsLoading(true); const finalData = { username: formData.username, password: formData.password, Bio: [{ firstname: formData.Bio.firstname, lastname: formData.Bio.lastname, email: formData.Bio.email, skills: formData.Bio.skills, }], Avatar: formData.Avatar }; try { const response = await axios.post("http://localhost:3000/api/v1/signup", finalData); localStorage.setItem("token", response.data.token); navigate("/dashboard"); } catch (err) { if (err.response && err.response.data && err.response.data.message) { setError(err.response.data.message); } else { setError("An unexpected error occurred during signup."); } } finally { setIsLoading(false); }};
+    const handleSubmit = async (e) => { e.preventDefault(); setError(''); setIsLoading(true); const finalData = { username: formData.username, password: formData.password, Bio: [{ firstname: formData.Bio.firstname, lastname: formData.Bio.lastname, email: formData.Bio.email, skills: formData.Bio.skills, }], Avatar: formData.Avatar }; try { const response = await axios.post("https://devhub-h0gg.onrender.com/api/v1/signup", finalData); localStorage.setItem("token", response.data.token); navigate("/dashboard"); } catch (err) { if (err.response && err.response.data && err.response.data.message) { setError(err.response.data.message); } else { setError("An unexpected error occurred during signup."); } } finally { setIsLoading(false); }};
     const handleAddSkill = (e) => { e.preventDefault(); const newSkill = skillInput.trim(); if (newSkill && !formData.Bio.skills.includes(newSkill)) { setFormData(prev => ({...prev, Bio: { ...prev.Bio, skills: [...prev.Bio.skills, newSkill] } })); setSkillInput(''); }};
     const handleRemoveSkill = (skillToRemove) => { setFormData(prev => ({ ...prev, Bio: { ...prev.Bio, skills: prev.Bio.skills.filter(skill => skill !== skillToRemove) } })); };
     const renderInput = (name, type, placeholder, value, onChange, isBio = false) => ( <div className="relative"> <input type={type} name={name} value={value} onChange={isBio ? handleBioChange : handleInputChange} onFocus={() => setFocusedField(name)} onBlur={() => setFocusedField('')} className={`w-full px-4 py-3 bg-gray-800/50 border rounded-xl text-white placeholder-gray-500 transition-all duration-300 focus:outline-none ${ focusedField === name ? 'border-blue-500 shadow-lg shadow-blue-500/20 bg-gray-750' : 'border-gray-700 hover:border-gray-600' }`} placeholder={placeholder} required /> </div> );

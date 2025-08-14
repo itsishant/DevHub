@@ -19,7 +19,7 @@ export const Profile = () => {
   const fetchCurrentUser = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/api/v1/me", {
+      const response = await axios.get("https://devhub-h0gg.onrender.com/api/v1/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const details = response.data.UserDetails;
