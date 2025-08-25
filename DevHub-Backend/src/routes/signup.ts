@@ -53,7 +53,7 @@ static async getMe (req: Request, res: Response) {
     try {
     const foundUser = await Me((req as any).userId);
 
-    if (!foundUser) {
+    if (!foundUser) {k
       return res.status(404).json({ message: "User not found" });
     }
 

@@ -22,7 +22,7 @@ app.use(express.json());
 
 // user controller
 app.post("/api/v1/signup", SignUpController.Signup);
-app.get('/api/v1/me', authMiddleWare, AuthController.getMe);
+app.get('/api/v1/me', authMiddleWare, AuthController.getMe)
 app.post('/api/v1/check-username', AuthController.checkUsername);
 app.get("/api/v1/getUser", authMiddleWare, AuthController.getAllUser);
 app.post('/api/v1/check-email', AuthController.checkEmail);
