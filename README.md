@@ -99,7 +99,7 @@ NODE_ENV=development
 # Database
 MONGODB_URI=mongodb://localhost:27017/devhub
 # or for MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/devhub
+# MONGODB_URI=username:passwor@cluster.mongodb.net/devhub_testing
 
 # JWT Authentication
 JWT_SECRET=your_super_secure_jwt_secret_key
@@ -408,3 +408,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ⭐ **If you find DevHub helpful, please give it a star on GitHub!**
 
 *Built with ❤️ for the developer community*
+
