@@ -72,6 +72,7 @@ export const Signup = () => {
             const errorMessage = err.response?.data?.message || 'Could not verify email. Please try again.';
             setEmailVerification({ status: 'error', message: errorMessage });
         }
+        
     };
 
     const handleNext = async () => {
