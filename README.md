@@ -54,7 +54,7 @@ A modern social networking platform designed specifically for developers to conn
 ## 🚀 Getting Started
 
 ### 📋 Prerequisites
-- **Node.js** (v14 or higher)  
+- **Node.js** (v14 or higher )  
 - **TypeScript** (v4.5 or higher)  
 - **MongoDB** (v4.4 or higher)  
 - **npm** or **yarn** package manager  
