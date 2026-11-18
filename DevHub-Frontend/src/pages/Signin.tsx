@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from "../config";
 
 export const Signin = () => {
     const [formData, setFormData] = useState({
@@ -26,7 +27,7 @@ export const Signin = () => {
         setIsLoading(true);
         
         try {
-            const response = await axios.post("https://devhub-h0gg.onrender.com/api/v1/signin", formData);
+            const response = await axios.post(`${API_URL}/signin`, formData);
             localStorage.setItem("token", response.data.token);
             
             setTimeout(() => {
