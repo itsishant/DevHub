@@ -17,6 +17,7 @@ import {jwtDecode} from 'jwt-decode';
 import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 import { motion } from "motion/react"
+import { API_URL } from "../config";
 
 interface UserProfile {
   _id: string;
@@ -65,7 +66,7 @@ export const Dashboard = () => {
   const fetchPosts = async () => {
     setLoading(prev => ({ ...prev, posts: true }));
     try {
-      const response = await axios.get("https://devhub-h0gg.onrender.com/api/v1/content");
+      const response = await axios.get(`${API_URL}/content`);
       const sortedPosts = (response.data.posts || []).sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
@@ -82,7 +83,7 @@ export const Dashboard = () => {
     setLoading(prev => ({ ...prev, friends: true }));
     setError(prev => ({ ...prev, friends: null }));
     try {
-      const response = await axios.get('https://devhub-h0gg.onrender.com/api/v1/friends', authHeader);
+      const response = await axios.get(`${API_URL}/friends`, authHeader);
       const friendProfiles = response.data.friends.map((friendship: any) => {
         return friendship.fromUser._id === userId ? friendship.toUser : friendship.fromUser;
       }).filter(Boolean);
@@ -110,7 +111,7 @@ export const Dashboard = () => {
     const postData = { content: newPost, type: 'text' };
     try {
       const response = await axios.post(
-        "https://devhub-h0gg.onrender.com/api/v1/posts",
+        `${API_URL}/posts`,
         postData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -126,7 +127,7 @@ export const Dashboard = () => {
     const token = localStorage.getItem("token");
     if(token){
         try{
-        await axios.delete(`https://devhub-h0gg.onrender.com/api/v1/deletepost/${postId}`, {
+        await axios.delete(`${API_URL}/deletepost/${postId}`, {
             headers: {          
                 Authorization: `Bearer ${token}`
             }});
@@ -164,7 +165,7 @@ export const Dashboard = () => {
 
     try {
       const res = await axios.post(
-        `https://devhub-h0gg.onrender.com/api/v1/posts/${postId}/like`,
+        `${API_URL}/posts/${postId}/like`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

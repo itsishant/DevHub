@@ -12,6 +12,7 @@ import axios, { AxiosError } from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { Route, useNavigate } from 'react-router-dom';
 import { motion } from "motion/react"
+import { API_URL } from "../config";
 
 interface UserProfile {
   _id: string;
@@ -73,7 +74,7 @@ export const Explore = () => {
     setLoading(prev => ({ ...prev, requests: true }));
     setError(prev => ({ ...prev, requests: null }));
     try {
-      const response = await axios.get('https://devhub-h0gg.onrender.com/api/v1/requests', authHeader);
+      const response = await axios.get(`${API_URL}/requests`, authHeader);
       const formattedRequests = response.data.requests.map((req: any) => ({
         ...req,
         sender: req.fromUser 
@@ -91,7 +92,7 @@ export const Explore = () => {
     setLoading(prev => ({ ...prev, friends: true }));
     setError(prev => ({ ...prev, friends: null }));
     try {
-      const response = await axios.get('https://devhub-h0gg.onrender.com/api/v1/friends', authHeader);
+      const response = await axios.get(`${API_URL}/friends`, authHeader);
       const friendProfiles = response.data.friends.map((friendship: any) => {
           return friendship.fromUser._id === userId ? friendship.toUser : friendship.fromUser;
       }).filter(Boolean);
@@ -108,7 +109,7 @@ export const Explore = () => {
     setLoading(prev => ({ ...prev, allUsers: true }));
     setError(prev => ({ ...prev, allUsers: null }));
     try {
-      const response = await axios.get('https://devhub-h0gg.onrender.com/api/v1/getUser', authHeader);
+      const response = await axios.get(`${API_URL}/getUser`, authHeader);
       setAllUsers(response.data.User || []);
     } catch (err) {
       setError(prev => ({ ...prev, allUsers: 'Failed to load users.' }));
@@ -122,7 +123,7 @@ const fetchMessages = async (friendId: string) => {
   setLoading(prev => ({ ...prev, messages: true }));
   setError(prev => ({ ...prev, messages: null }));
   try {
-    const response = await axios.get(`https://devhub-h0gg.onrender.com/api/v1/messages/${friendId}`, authHeader);
+    const response = await axios.get(`${API_URL}/messages/${friendId}`, authHeader);
     setMessages(response.data.messages || []);
   } catch (err) {
     setError(prev => ({ ...prev, messages: 'Failed to load messages.' }));
@@ -148,7 +149,7 @@ const fetchMessages = async (friendId: string) => {
 
   const handleAddFriend = async (receiverId: string) => {
     try {
-      await axios.post('https://devhub-h0gg.onrender.com/api/v1/request', { toUser: receiverId }, authHeader);
+      await axios.post(`${API_URL}/request`, { toUser: receiverId }, authHeader);
       setSentRequestIds(prev => [...prev, receiverId]);
     } catch (error) {
       if (axios.isAxiosError(error) && (error as AxiosError).response?.status === 411) {
@@ -165,7 +166,7 @@ const fetchMessages = async (friendId: string) => {
         return;
     }
     try {
-      await axios.put('https://devhub-h0gg.onrender.com/api/v1/decline', { fromUser: senderId }, authHeader);
+      await axios.put(`${API_URL}/decline`, { fromUser: senderId }, authHeader);
       fetchFriendRequests();
     } catch (error) {
       alert('Could not reject request.');
@@ -190,7 +191,7 @@ const handleSendMessage = async () => {
 
   try {
     const response = await axios.post(
-      'https://devhub-h0gg.onrender.com/api/v1/sendMessage',
+      `${API_URL}/sendMessage`,
       {
         receiverId: selectedFriend._id,
         text: messageContent,
@@ -224,7 +225,7 @@ const handleSendMessage = async () => {
   const handleMarkAsSeen = async (friendId: string) => {
     if (!token) return;
     try {
-      await axios.put('https://devhub-h0gg.onrender.com/api/v1/seenMessage', { senderId: friendId }, authHeader);
+      await axios.put(`${API_URL}/seenMessage`, { senderId: friendId }, authHeader);
     } catch (error) {
     }
 }

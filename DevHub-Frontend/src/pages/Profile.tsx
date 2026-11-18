@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
+import { API_URL } from "../config";
 
 export const Profile = () => {
   const [activeTab, setActiveTab] = useState();
@@ -19,7 +20,7 @@ export const Profile = () => {
   const fetchCurrentUser = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("https://devhub-h0gg.onrender.com/api/v1/me", {
+      const response = await axios.get(`${API_URL}/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const details = response.data.UserDetails;
